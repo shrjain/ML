@@ -1,0 +1,82 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{nips13submit_e,times}
+\usepackage{hyperref}
+\usepackage{url}
+%\documentstyle[nips13submit_09,times,art10]{article} % For LaTeX 2.09
+
+
+\title{Netflix Challenge - Improving matrix factorization}
+
+
+\author{
+Shrainik Jain\\
+1323338\\
+\texttt{shrainik@cs.washington.edu} \\
+\And
+Arunkumar Byravan \\
+1222561 \\
+\texttt{barun@cs.washington.edu} \\
+}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\nipsfinalcopy % Uncomment for camera-ready version
+
+\begin{document}
+
+
+\maketitle
+
+\begin{abstract}
+Traditional recommendation systems (eg Netflix Challenge) pose the problem predicting user responses as Matrix approximation problem. It has been shown that this problem can be solved using matrix factorization techniques by assuming that the matrix is of Low rank. [1] propose to relax this assumption by approximating the matrix as a smoothened convex combination of low rank matrices each of which approximate the original matrix in a local region. We are interested in implementing the techniques used in [1] and compare the performance with traditional matrix factorization techniques (Incomplete SVD and Nuclear norm minimization). Further, we would like to explore avenues for parallelizing the computation to speed up the learning problem.
+\end{abstract}
+
+\section{Introduction}
+The problem of predicting a users rating of a content, based on his ratings of other content and ratings of other users for similar content is equivalent to solving a matrix approximation problem, i.e., if each user represents a row and each content item represents a column, then the problem is equivalent to finding the missing entries in such a matrix. There are several approaches to solving this problem, most common among which is matrix factorization[3] and SVD[2]. \\
+Given the sizes of datasets for this problem, it is difficult to solve it using traditional approaches and assumptions. Lee et al [1] explore the avenues for parallelization by relaxing the assumption of overall low rank of the predicted matrix to locally low ranked matrix. The problem then breaks down to solving the approximation problem for each of these smaller low ranked matrices and later combining the results. In this paper, we try to improve the performance (in terms of the prediction accuracy) without harming the parallelization. We also compare our approach to the existing approaches in terms of the prediction accuracy (RMSE) and speed of computation.
+
+\section{Related Work}
+There have way to many attempts at solving the matrix approximation problem for recommendation systems. Common strategies can be broken to broad categories [3], {\it content filtering} and {\it collaborative filtering}.\\
+Content filtering requires trained analysts to rate each content on various metrics and then match these metrics with the user choices. The obvious problem with this approach is that such metrics are often incredibly hard to collect or not available at all.\\
+Collaborative filtering takes into account user's past behaviour in terms of his preferences and doesnt require explicit profiling of content. Two primary methods in collaborative filtering are {\it neighbourhood methods} and {\it latent factor methods}. Neighbourhood methods try and look for other users with similar preferences and suggest the user with content these other users liked. \\
+Latent Factoring method represents a user's preference as a combination of several hidden factors. The final rating for particular content can be thought of as a dot product of user's preferences of hidden metrics and a vector containing classification of the content on each of these metric. It is very straight forward to see how this maps to factorizing the users-cross-content ratings matrix to a product of users-cross-latentfactor multiplied by latentfactor-cross-movie matrices [2] [3].\\
+In terms of looking for distributed approaches to solving the problem, [4] breaks down the problem to several factorization problems on smaller matrices. Similar approaches have been taken by Mackey et al. [5] although they dont use the local low rank assumption.
+
+\section{Experiments}
+We believe that the local low-rank assumption is one of the better ways to break down the problem into smaller parts (and thus making possible distributed processing of dataset), without compromising the prediction accuracy. Our initial experiments on the MovieLens 1M dataset reveal that the Lee et al.'s [1] approach gives both performance speed up and better prediction accuracy. To find a local low rank matrix, we select a random anchor point in the dataset and use epanechnikov kernels with a width of 0.8 over both the user space and the content space. We use traditional gradient descent with regularization to solve the individual factorization problems and found that batch gradient descent works better in our setting than stochastic gradient descent. 
+
+\section{Future Work}
+So far, our model does not take into account existing notions on content and user similarity at all. This problem is common amongst all collaborative filtering approaches.\\
+Our future course of action is to compute the epanechnikov kernels based on the user and content similarity based on actual physical factors like location, datetime for rating, datetime for content release etc.  Our belief is that such a method would be somewhat like a mix of content filtering \& collaborative filtering and it would be exciting to see how this fares in terms on prediction accuracy.\\
+Also, we have only tried this algorithm on the smaller datasets, we plan to run it on the entire netflix dataset. For parallelization, we will use Matlab over cluster nodes (this is possible as each smaller matrix factorization problem is independent) and if time permits we will try the same using CUDA. 
+
+\subsubsection*{Acknowledgments}
+We have taken heavy inspirations from the Local Low-Rank Matrix Approach, we strongly believe using the context information will improve the accuracy of the predictions and our experiments tend to suggest that.
+
+\subsubsection*{References}
+
+
+\small{
+[1] Joonseok Lee et al., Local Low-Rank Matrix Approximation. {\it Proceedings of the 30th Internation Conference on Machine Learning.} Atlanta, Georfia, USA, 2013.
+
+[2] A. Paterek, Improving Regularized Singular Value Decomposition for Collaborative Filtering. {\it Proc. KDD Cup and Workshop, ACM Press, 2007, pp. 37-42}
+
+[3] Yehuda Koren et al., Matrix Factorization Techniques for Recommender Systems. {\it Cover Feature, IEEE Computing Society, 2009}
+
+[4] Yunhong Zhou et al. Large-Scale Parallel Collaborative Filtering for the Netflix Prize.
+
+[5] Mackey et al. Divide-and-Conquer Matrix Factorization.
+
+[6] Rainer Germulla, Large-Scale Matrix Factorization with Distributed Stochastic Gradient Descent. {\it http://www.mpi-inf.mpg.de/~rgemulla/publications/gemulla11dsgd-slides.pdf, Aug, 2011}
+}
+
+\end{document}

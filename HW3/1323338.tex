@@ -1,6 +1,6 @@
 \documentclass[letterpaper]{article}
 \title{CSE 546 Machine Learning, Autumn 2013 \\ Homework 3}
-\date{Shrainik Jain, 1323338 \\ Collaborated with Nacho Cano}
+\date{Shrainik Jain, 1323338}
 \usepackage{hyperref}
 
 \usepackage[margin=1.5in]{geometry}
@@ -212,7 +212,7 @@ hence the prediction rule is:
 \end{enumerate}
 
 \subsection{SVM}
-
+ 
 \begin{enumerate}
 
 \item Update rules for linear SVM Stochastic gradient descent: 
@@ -229,9 +229,19 @@ w_0^{(t+1)} = w_0^{(t)} + \eta  C  y^{(t)} \,\,\,  ...(Ans)
 \item Average loss after every 100 steps for $\eta = 10^{-5}$ and $C = 1$: \\ \\ 
 \includegraphics[width = 4.5in, keepaspectratio]{HW3_figure6.png}
 
-\item
+\item For SVMs, C is the measure of how much we want to penalize misclassification of data, ie. the categorization error. The objective of SVM is:
+\begin{equation}
+argmin \,\,\,  ||w||_2^2 + C\sum_{j=1}^N{(1-y^j(w.x^j + w_0))_{+}}
+\end{equation}
 
-\item
+We started the experiment with C=1 and got some decision rule d1, which misclassified some data points due to linear inseparablity of data. Irrespective of how much we increase C, we will always misclassify these specific linearly inseparable data points (since we are not using features of features). Hence the decision rule doesnt change. It just means that the margin keeps on decreasing.
+
+\item As stated in the previous part, C is the measure of how much we want to penalize misclassification of data. If we increase C, we penalize the mistakes more and decrease the margin. A higher values of C imply that we will get good separation in the data but a smaller margin. Lower values of C imply that we want bigger margins and and care lesser about the number of mistakes in training.\\
+The relation with perceptron can be seen as the following:
+\begin{itemize}
+\item Both SVM and perceptron try to minimize the hinge loss, but SVM has regularization.
+\item Lack of regularization in perceptron gives it an exact upper bound on the number of mistakes. In SVM, we can control this upper bound by the regularization constant C. Specifically, lower C $\Rightarrow$ higher bound on number of allowed errors. (which in turn implies we are willing to tolerate errors to get a better separation.)
+\end{itemize}
 
 \end{enumerate}
 
